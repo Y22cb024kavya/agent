@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Real-Time Agent Tester</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+        #chat { height: 300px; border: 1px solid #ccc; padding: 10px; overflow-y: auto; margin-bottom: 10px; background: #f9f9f9; }
+        input { width: 75%; padding: 10px; }
+        button { width: 20%; padding: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h2>Agent WebSocket Tester</h2>
+    <div id="chat"></div>
+    <input type="text" id="messageInput" placeholder="Type a message (e.g., 'I need help with FastAPI')">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        // Connect to your FastAPI WebSocket
+        const ws = new WebSocket("ws://localhost:8000/ws/agent");
+        const chat = document.getElementById("chat");
+
+        ws.onopen = () => chat.innerHTML += "<p>🟢 <b>Connected to Agent!</b></p>";
+        ws.onclose = () => chat.innerHTML += "<p>🔴 <b>Disconnected.</b></p>";
+        
+        // Listen for the Agent's response
+        ws.onmessage = (event) => {
+            const response = JSON.parse(event.data);
+            chat.innerHTML += `<p>🤖 <b>Agent:</b> <pre>${JSON.stringify(response.data, null, 2)}</pre></p>`;
+            chat.scrollTop = chat.scrollHeight; // Auto-scroll
+        };
+
+        // Send message to the backend
+        function sendMessage() {
+            const input = document.getElementById("messageInput");
+            if (input.value) {
+                chat.innerHTML += `<p>🧑 <b>You:</b> ${input.value}</p>`;
+                ws.send(input.value);
+                input.value = "";
+            }
+        }
+    </script>
+</body>
+</html>
